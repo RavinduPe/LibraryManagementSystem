@@ -11,7 +11,7 @@ import java.util.Map;
 
 @RestController
 @ResponseBody
-@RequestMapping(value = "api/book")
+@RequestMapping(value = "api/books")
 public class BookController {
 
     @Autowired

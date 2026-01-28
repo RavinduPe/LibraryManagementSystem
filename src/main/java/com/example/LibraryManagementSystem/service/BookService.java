@@ -32,7 +32,6 @@ public class BookService {
     public BookDto getBookById(String bookId){
         long id = Long.parseLong(bookId);
         Book book = bookRepository.findById(id).orElseThrow(() -> new RuntimeException("Book not found with ID: " + bookId));
-        Class<? extends BookDto> BookDto;
         return modelMapper.map(book,BookDto.class);
     }
 

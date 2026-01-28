@@ -6,19 +6,12 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Entity
-
-public class Book {
+public class Member {
     @Id
-    private long id;
-    private String title;
-    private String author;
-    private String genre;
-    private double prise;
-    private boolean available;
-
+    private Long id;
+    private String name;
 }

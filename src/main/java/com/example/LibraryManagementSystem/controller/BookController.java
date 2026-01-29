@@ -17,7 +17,7 @@ public class BookController {
     @Autowired
     private BookService bookService;
 
-    @PostMapping("booksave")
+    @PostMapping()
     public ResponseEntity< BookDto > saveBook(@RequestBody BookDto bookDto)
     {
         BookDto responce = bookService.saveBook(bookDto);
@@ -25,7 +25,7 @@ public class BookController {
         return ResponseEntity.ok(responce);
     }
 
-    @GetMapping("getbooks")
+    @GetMapping()
     public ResponseEntity<List<BookDto>> getAllBook(){
         List<BookDto> books = bookService.getAllBooks();
 

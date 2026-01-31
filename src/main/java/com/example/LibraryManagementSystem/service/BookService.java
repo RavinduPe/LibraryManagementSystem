@@ -3,12 +3,16 @@ package com.example.LibraryManagementSystem.service;
 import com.example.LibraryManagementSystem.dto.BookDto;
 import com.example.LibraryManagementSystem.entity.Author;
 import com.example.LibraryManagementSystem.entity.Book;
+import com.example.LibraryManagementSystem.entity.Member;
 import com.example.LibraryManagementSystem.repository.AuthorRepository;
 import com.example.LibraryManagementSystem.repository.BookRepository;
+import com.example.LibraryManagementSystem.repository.MemberRepository;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -23,6 +27,8 @@ public class BookService {
 
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private MemberRepository memberRepository;
 
     public BookDto saveBook(BookDto bookDto) {
 
@@ -74,4 +80,35 @@ public class BookService {
         return "Updated book " + bookId + " with new title: " + newTitle;
     }
 
+    public void borrowBook(Long memberId,Long bookId){
+        Member member = memberRepository.findById(memberId).orElseThrow(()->new RuntimeException("Member not found"));
+
+        Book book = bookRepository.findById(bookId).orElseThrow(()->new RuntimeException("book not found"));
+
+        if (book.isAvailable()){
+            throw new RuntimeException("Book is not available");
+        }
+
+        member.getBorrowedBooks().add(book);
+        book.setAvailable(false);
+
+        memberRepository.save(member);
+        bookRepository.save(book);
+    }
+
+    public void returnBook(Long memberId,Long bookId){
+        Member member = memberRepository.findById(memberId).orElseThrow(()->new RuntimeException("Member not found"));
+
+        Book book = bookRepository.findById(bookId).orElseThrow(()->new RuntimeException("Book not found"));
+
+        if(!member.getBorrowedBooks().contains(book)){
+            throw new RuntimeException("Book not borrowed by this member");
+        }
+
+        member.getBorrowedBooks().remove(book);
+        book.setAvailable(true);
+
+        memberRepository.save(member);
+        bookRepository.save(book);
+    }
 }

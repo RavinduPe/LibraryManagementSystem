@@ -51,4 +51,16 @@ public class BookController {
 
         return ResponseEntity.ok(updateResponse);
     }
+
+    @PostMapping("/borrow")
+    public ResponseEntity<String> barrowBook(@RequestParam Long memberId , @RequestParam Long bookId){
+        bookService.borrowBook(memberId,bookId);
+        return ResponseEntity.ok("Book borrowed successfully");
+    }
+
+    @PostMapping("/return")
+    public ResponseEntity<String> returnbook(@RequestParam Long memberId, @RequestParam Long bookId){
+        bookService.returnBook(memberId,bookId);
+        return ResponseEntity.ok("Book returned successfully");
+    }
 }

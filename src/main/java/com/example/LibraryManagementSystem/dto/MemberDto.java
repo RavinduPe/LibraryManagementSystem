@@ -1,8 +1,14 @@
 package com.example.LibraryManagementSystem.dto;
 
+import com.example.LibraryManagementSystem.entity.Book;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import java.util.ArrayList;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -10,4 +16,13 @@ import lombok.NoArgsConstructor;
 public class MemberDto {
     private Long id;
     private String name;
+
+    @ManyToMany
+    @JoinTable(
+            name = "borrowed_books",
+            joinColumns = @JoinColumn(name = "member_id"),
+            inverseJoinColumns = @JoinColumn(name = "book_id")
+    )
+    private List<Book> borrowedBooks = new ArrayList<>();
+
 }

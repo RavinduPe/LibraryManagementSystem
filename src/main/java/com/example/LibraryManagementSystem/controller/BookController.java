@@ -20,9 +20,9 @@ public class BookController {
     @PostMapping()
     public ResponseEntity< BookDto > saveBook(@RequestBody BookDto bookDto)
     {
-        BookDto responce = bookService.saveBook(bookDto);
+        BookDto response = bookService.saveBook(bookDto);
 
-        return ResponseEntity.ok(responce);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping()

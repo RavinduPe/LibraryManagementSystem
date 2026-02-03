@@ -8,13 +8,16 @@ import lombok.NoArgsConstructor;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 public class MemberDto {
     private Long id;
+    @NotBlank(message = "Member name is required")
     private String name;
 
     @ManyToMany

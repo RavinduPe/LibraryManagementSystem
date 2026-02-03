@@ -4,6 +4,7 @@ import com.example.LibraryManagementSystem.dto.BookDto;
 import com.example.LibraryManagementSystem.entity.Author;
 import com.example.LibraryManagementSystem.entity.Book;
 import com.example.LibraryManagementSystem.entity.Member;
+import com.example.LibraryManagementSystem.exception.BookNotFoundException;
 import com.example.LibraryManagementSystem.repository.AuthorRepository;
 import com.example.LibraryManagementSystem.repository.BookRepository;
 import com.example.LibraryManagementSystem.repository.MemberRepository;
@@ -83,7 +84,8 @@ public class BookService {
     public void borrowBook(Long memberId,Long bookId){
         Member member = memberRepository.findById(memberId).orElseThrow(()->new RuntimeException("Member not found"));
 
-        Book book = bookRepository.findById(bookId).orElseThrow(()->new RuntimeException("book not found"));
+        Book book = bookRepository.findById(bookId).orElseThrow(() -> new BookNotFoundException("Book not found with id " + bookId));
+        ;
 
         if (book.isAvailable()){
             throw new RuntimeException("Book is not available");
@@ -99,7 +101,8 @@ public class BookService {
     public void returnBook(Long memberId,Long bookId){
         Member member = memberRepository.findById(memberId).orElseThrow(()->new RuntimeException("Member not found"));
 
-        Book book = bookRepository.findById(bookId).orElseThrow(()->new RuntimeException("Book not found"));
+        Book book = bookRepository.findById(bookId).orElseThrow(() -> new BookNotFoundException("Book not found with id " + bookId));
+
 
         if(!member.getBorrowedBooks().contains(book)){
             throw new RuntimeException("Book not borrowed by this member");

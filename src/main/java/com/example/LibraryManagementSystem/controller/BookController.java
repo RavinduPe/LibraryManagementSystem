@@ -59,7 +59,7 @@ public class BookController {
     }
 
     @PostMapping("/return")
-    public ResponseEntity<String> returnbook(@RequestParam Long memberId, @RequestParam Long bookId){
+    public ResponseEntity<String> returnBook(@RequestParam Long memberId, @RequestParam Long bookId){
         bookService.returnBook(memberId,bookId);
         return ResponseEntity.ok("Book returned successfully");
     }

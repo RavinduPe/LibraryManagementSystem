@@ -33,22 +33,25 @@ public class BookService {
 
     public BookDto saveBook(BookDto bookDto) {
 
-        // 1️⃣ Convert DTO → Entity (simple fields)
-        Book book = modelMapper.map(bookDto, Book.class);
+        Book book = new Book();
+        book.setTitle(bookDto.getTitle());
+        book.setGenre(bookDto.getGenre());
+        book.setPrice(bookDto.getPrice());
+        book.setAvailable(bookDto.isAvailable());
 
-        // 2️⃣ Handle relationship manually
         Author author = authorRepository.findById(bookDto.getAuthorId())
                 .orElseThrow(() -> new RuntimeException("Author not found"));
 
         book.setAuthor(author);
 
-        // 3️⃣ Save
         Book savedBook = bookRepository.save(book);
 
-        // 4️⃣ Convert back Entity → DTO
-        BookDto response = modelMapper.map(savedBook, BookDto.class);
+        BookDto response = new BookDto();
+        response.setTitle(savedBook.getTitle());
+        response.setGenre(savedBook.getGenre());
+        response.setPrice(savedBook.getPrice());
+        response.setAvailable(savedBook.isAvailable());
         response.setAuthorId(author.getId());
-        response.setAuthorName(author.getName());
 
         return response;
     }

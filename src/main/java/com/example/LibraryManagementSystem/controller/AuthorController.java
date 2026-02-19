@@ -43,12 +43,25 @@ public class AuthorController {
         return ResponseEntity.ok(authors);
     }
 
-    @DeleteMapping("{authorId}")
-    public ResponseEntity<String> deleteAuthorById(@PathVariable String authorId)
-    {
-        String confirmResponse = authorService.authorDeleteById(authorId);
-        return ResponseEntity.ok(confirmResponse);
+//    @DeleteMapping("{authorId}")
+//    public ResponseEntity<String> deleteAuthorById(@PathVariable String authorId)
+//    {
+//        String confirmResponse = authorService.authorDeleteById(authorId);
+//        return ResponseEntity.ok(confirmResponse);
+//    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteAuthorById(@PathVariable Long id) {
+        try {
+            authorService.authorDeleteById(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
+
 
     @PutMapping("{authorId}")
     public  ResponseEntity<String> updateAuthorById(@PathVariable String authorId , @RequestBody Map<String, String> requestBody)

@@ -3,6 +3,7 @@ package com.example.LibraryManagementSystem.service;
 import com.example.LibraryManagementSystem.dto.AuthorDto;
 import com.example.LibraryManagementSystem.entity.Author;
 import com.example.LibraryManagementSystem.repository.AuthorRepository;
+import com.example.LibraryManagementSystem.repository.BookRepository;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,9 @@ import java.util.List;
 public class AuthorService {
     @Autowired
     private AuthorRepository authorRepository;
+
+    @Autowired
+    private BookRepository bookRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -29,17 +33,31 @@ public class AuthorService {
         return modelMapper.map(author,new TypeToken<List<AuthorDto>>(){}.getType());
     }
 
+    public void authorDeleteById(Long id) {
+
+        Author author = authorRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Author not found"));
+
+        boolean hasBooks = bookRepository.existsByAuthorId(id);
+
+        if (hasBooks) {
+            throw new IllegalStateException("Cannot delete author with existing books");
+        }
+
+        authorRepository.delete(author);
+    }
+
     public AuthorDto getAuthorById(Long id) {
         Author author = authorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Author not found with ID: " + id));
         return modelMapper.map(author, AuthorDto.class);
     }
 
-    public String authorDeleteById(String authorId) {
-        long id = Long.parseLong(authorId);
-        authorRepository.deleteById(id);
-        return "Deleted successfully Where Book ID : " + authorId ;
-    }
+//    public String authorDeleteById(String authorId) {
+//        long id = Long.parseLong(authorId);
+//        authorRepository.deleteById(id);
+//        return "Deleted successfully Where Book ID : " + authorId ;
+//    }
 
     public String updateAuthorName(String authorId, String authorName) {
         Long id = Long.parseLong(authorId);

@@ -1,6 +1,6 @@
 package com.example.LibraryManagementSystem.controller;
 
-import com.example.LibraryManagementSystem.dto.BookDto;
+import com.example.LibraryManagementSystem.dto.BookDTO;
 import com.example.LibraryManagementSystem.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -9,70 +9,49 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
-@ResponseBody
-@RequestMapping(value = "api/books")
+@RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class BookController {
 
     @Autowired
     private BookService bookService;
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping()
-    public ResponseEntity< BookDto > saveBook(@Valid @RequestBody BookDto bookDto)
-    {
-        BookDto response = bookService.saveBook(bookDto);
-
-        return ResponseEntity.ok(response);
+    // USER endpoints
+    @GetMapping("/user/books")
+    public ResponseEntity<List<BookDTO>> getAllBooks() {
+        return ResponseEntity.ok(bookService.getAllBooks());
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @GetMapping()
-    public ResponseEntity<List<BookDto>> getAllBook(){
-        List<BookDto> books = bookService.getAllBooks();
-
-        return ResponseEntity.ok(books);
+    @GetMapping("/user/books/available")
+    public ResponseEntity<List<BookDTO>> getAvailableBooks() {
+        return ResponseEntity.ok(bookService.getAvailableBooks());
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @GetMapping("{bookId}")
-    public ResponseEntity<BookDto> getBookById(@PathVariable String bookId){
-        BookDto book = bookService.getBookById(bookId);
-        return ResponseEntity.ok(book);
+    @GetMapping("/user/books/{id}")
+    public ResponseEntity<BookDTO> getBookById(@PathVariable Long id) {
+        return ResponseEntity.ok(bookService.getBookById(id));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("{bookId}")
-    public ResponseEntity<String> deleteBookById(@PathVariable String bookId)
-    {
-        String confirmResponse = bookService.deleteById(bookId);
-        return ResponseEntity.ok(confirmResponse);
+    // ADMIN endpoints
+    @PostMapping("/admin/books")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<BookDTO> createBook(@Valid @RequestBody BookDTO bookDTO) {
+        return ResponseEntity.ok(bookService.createBook(bookDTO));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("{bookId}")
-    public  ResponseEntity<String> updateBookById(@PathVariable String bookId , @RequestBody Map<String, String> requestBody)
-    {
-        String newTitle = requestBody.get("title");
-        String updateResponse = bookService.updateBookTitle(bookId, newTitle);
-
-        return ResponseEntity.ok(updateResponse);
+    @PutMapping("/admin/books/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<BookDTO> updateBook(@PathVariable Long id,
+                                              @Valid @RequestBody BookDTO bookDTO) {
+        return ResponseEntity.ok(bookService.updateBook(id, bookDTO));
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @PostMapping("/borrow")
-    public ResponseEntity<String> barrowBook(@RequestParam Long memberId , @RequestParam Long bookId){
-        bookService.borrowBook(memberId,bookId);
-        return ResponseEntity.ok("Book borrowed successfully");
-    }
-
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @PostMapping("/return")
-    public ResponseEntity<String> returnBook(@RequestParam Long memberId, @RequestParam Long bookId){
-        bookService.returnBook(memberId,bookId);
-        return ResponseEntity.ok("Book returned successfully");
+    @DeleteMapping("/admin/books/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<?> deleteBook(@PathVariable Long id) {
+        bookService.deleteBook(id);
+        return ResponseEntity.ok().body("Book deleted successfully");
     }
 }

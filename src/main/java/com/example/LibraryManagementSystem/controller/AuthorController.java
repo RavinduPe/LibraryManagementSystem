@@ -1,73 +1,52 @@
 package com.example.LibraryManagementSystem.controller;
 
-import com.example.LibraryManagementSystem.dto.AuthorDto;
+import com.example.LibraryManagementSystem.dto.AuthorDTO;
 import com.example.LibraryManagementSystem.service.AuthorService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
-@ResponseBody
-@RequestMapping(value = "api/authors")
+@RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class AuthorController {
 
     @Autowired
     private AuthorService authorService;
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping()
-    public ResponseEntity<AuthorDto> createAuthor(@RequestBody AuthorDto authorDto)
-    {
-        AuthorDto response = authorService.createUser(authorDto);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    // USER endpoints
+    @GetMapping("/user/authors")
+    public ResponseEntity<List<AuthorDTO>> getAllAuthors() {
+        return ResponseEntity.ok(authorService.getAllAuthors());
     }
 
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    @GetMapping()
-    public ResponseEntity<List<AuthorDto>> getAllAuthors()
-    {
-        List<AuthorDto> authors = authorService.getAllAuthors();
-
-        return ResponseEntity.ok(authors);
+    @GetMapping("/user/authors/{id}")
+    public ResponseEntity<AuthorDTO> getAuthorById(@PathVariable Long id) {
+        return ResponseEntity.ok(authorService.getAuthorById(id));
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @GetMapping("{authorId}")
-    public ResponseEntity<AuthorDto> getAuthorById(@PathVariable String authorId)
-    {
-        AuthorDto authors = authorService.getAuthorById(Long.valueOf(authorId));
-
-        return ResponseEntity.ok(authors);
+    // ADMIN endpoints
+    @PostMapping("/admin/authors")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<AuthorDTO> createAuthor(@Valid @RequestBody AuthorDTO authorDTO) {
+        return ResponseEntity.ok(authorService.createAuthor(authorDTO));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteAuthorById(@PathVariable Long id) {
-        try {
-            authorService.authorDeleteById(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+    @PutMapping("/admin/authors/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<AuthorDTO> updateAuthor(@PathVariable Long id,
+                                                  @Valid @RequestBody AuthorDTO authorDTO) {
+        return ResponseEntity.ok(authorService.updateAuthor(id, authorDTO));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("{authorId}")
-    public  ResponseEntity<String> updateAuthorById(@PathVariable String authorId , @RequestBody Map<String, String> requestBody)
-    {
-        String newName = requestBody.get("name");
-        String updateResponse = authorService.updateAuthorName(authorId, newName);
-
-        return ResponseEntity.ok(updateResponse);
+    @DeleteMapping("/admin/authors/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<?> deleteAuthor(@PathVariable Long id) {
+        authorService.deleteAuthor(id);
+        return ResponseEntity.ok().body("Author deleted successfully");
     }
-
 }

@@ -156,7 +156,8 @@ public class UserService {
                 user.getId(),
                 user.getUsername(),
                 user.getRole(),
-                borrowedCount
+                borrowedCount,
+                user.getCreatedAt()
         );
     }
 }

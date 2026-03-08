@@ -24,6 +24,14 @@ public class Book {
     @Positive
     private Double price;
 
+    @NotNull
+    @Positive
+    private Integer totalCopies;
+
+    @NotNull
+    @Positive
+    private Integer availableCopies;
+
     @Column(name = "available")
     private boolean available = true;
 
@@ -35,11 +43,16 @@ public class Book {
     // Constructors
     public Book() {}
 
-    public Book(String title, String genre, Double price, Author author) {
+    public Book(String title, String genre, Double price, Author author,
+                Integer totalCopies ,Integer availableCopies) {
+
         this.title = title;
         this.genre = genre;
         this.price = price;
         this.author = author;
+
+        this.totalCopies = totalCopies;
+        this.availableCopies = availableCopies;
         this.available = true;
     }
 
@@ -90,5 +103,21 @@ public class Book {
 
     public void setAuthor(Author author) {
         this.author = author;
+    }
+
+    public Integer getTotalCopies() {
+        return totalCopies;
+    }
+
+    public void setTotalCopies(Integer totalCopies) {
+        this.totalCopies = totalCopies;
+    }
+
+    public Integer getAvailableCopies() {
+        return availableCopies;
+    }
+
+    public void setAvailableCopies(Integer availableCopies) {
+        this.availableCopies = availableCopies;
     }
 }

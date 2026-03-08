@@ -24,20 +24,26 @@ public class AuthorController {
         return ResponseEntity.ok(authorService.getAllAuthors());
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/admin/authors")
+    public ResponseEntity<List<AuthorDTO>> getAllAuthorsForAdmin() {
+        return ResponseEntity.ok(authorService.getAllAuthors());
+    }
+
     @GetMapping("/user/authors/{id}")
     public ResponseEntity<AuthorDTO> getAuthorById(@PathVariable Long id) {
         return ResponseEntity.ok(authorService.getAuthorById(id));
     }
 
     // ADMIN endpoints
-    @PostMapping("/admin/authors")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping("/admin/authors")
     public ResponseEntity<AuthorDTO> createAuthor(@Valid @RequestBody AuthorDTO authorDTO) {
         return ResponseEntity.ok(authorService.createAuthor(authorDTO));
     }
 
-    @PutMapping("/admin/authors/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @PutMapping("/admin/authors/{id}")
     public ResponseEntity<AuthorDTO> updateAuthor(@PathVariable Long id,
                                                   @Valid @RequestBody AuthorDTO authorDTO) {
         return ResponseEntity.ok(authorService.updateAuthor(id, authorDTO));

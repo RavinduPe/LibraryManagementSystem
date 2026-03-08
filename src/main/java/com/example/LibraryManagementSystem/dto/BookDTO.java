@@ -1,5 +1,8 @@
 package com.example.LibraryManagementSystem.dto;
 
+import lombok.Data;
+
+
 public class BookDTO {
     private Long id;
     private String title;
@@ -8,6 +11,8 @@ public class BookDTO {
     private boolean available;
     private Long authorId;
     private String authorName;
+    private Integer totalCopies;
+    private Integer availableCopies;
 
     // Constructors
     public BookDTO() {}
@@ -68,4 +73,21 @@ public class BookDTO {
     public void setAuthorName(String authorName) {
         this.authorName = authorName;
     }
+
+    public Integer getTotalCopies() {
+        return totalCopies;
+    }
+
+    public void setTotalCopies(Integer totalCopies) {
+        this.totalCopies = totalCopies;
+    }
+
+    public Integer getAvailableCopies() {
+        return availableCopies;
+    }
+
+    public void setAvailableCopies(Integer availableCopies) {
+        this.availableCopies = availableCopies;
+    }
+
 }

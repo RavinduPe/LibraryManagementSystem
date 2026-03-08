@@ -31,7 +31,17 @@ public class BorrowController {
     }
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/admin/return/{borrowId}")
-    public ResponseEntity<?> returnBook(@PathVariable Long borrowId) {
+    public ResponseEntity<?> adminReturnBook(@PathVariable Long borrowId) {
+        try {
+            BorrowDTO borrow = borrowService.returnBook(borrowId);
+            return ResponseEntity.ok(borrow);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/user/return/{borrowId}")
+    public ResponseEntity<?> userReturnBook(@PathVariable Long borrowId) {
         try {
             BorrowDTO borrow = borrowService.returnBook(borrowId);
             return ResponseEntity.ok(borrow);

@@ -29,125 +29,102 @@ public class BorrowService {
     private UserService userService;
 
     @Transactional
-    public BorrowDTO borrowBook(BorrowRequestDTO borrowRequest) {
-        try {
-            User currentUser = userService.getCurrentUser();
-            Book book = bookRepository.findById(borrowRequest.getBookId())
-                    .orElseThrow(() -> new RuntimeException("Book not found with id: " + borrowRequest.getBookId()));
+    public BorrowDTO borrowBook(BorrowRequestDTO request) {
 
-            // Check if book is available
-            if (!book.isAvailable()) {
-                throw new RuntimeException("Book is not available for borrowing");
-            }
+        User currentUser = userService.getCurrentUser();
 
-            // Check if user already has this book borrowed and not returned
-            if (borrowRepository.existsByUserAndBookAndReturnedFalse(currentUser, book)) {
-                throw new RuntimeException("You have already borrowed this book and haven't returned it yet");
-            }
+        Book book = bookRepository.findById(request.getBookId())
+                .orElseThrow(() -> new RuntimeException("Book not found"));
 
-            // Create borrow record
-            Borrow borrow = new Borrow();
-            borrow.setUser(currentUser);
-            borrow.setBook(book);
-            borrow.setBorrowDate(LocalDate.now());
-            borrow.setReturned(false);
-
-            // Update book availability
-            book.setAvailable(false);
-            bookRepository.save(book);
-
-            Borrow savedBorrow = borrowRepository.save(borrow);
-            return convertToDTO(savedBorrow);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error borrowing book: " + e.getMessage());
+        //  Check copy availability
+        if (book.getAvailableCopies() == null || book.getAvailableCopies() <= 0) {
+            throw new RuntimeException("No copies available");
         }
+
+        //  Prevent duplicate borrow
+        if (borrowRepository.existsByUserAndBookAndReturnedFalse(currentUser, book)) {
+            throw new RuntimeException("You already borrowed this book");
+        }
+
+        Borrow borrow = new Borrow();
+        borrow.setUser(currentUser);
+        borrow.setBook(book);
+        borrow.setBorrowDate(LocalDate.now());
+        borrow.setReturned(false);
+
+        //  Reduce available copy
+        book.setAvailableCopies(book.getAvailableCopies() - 1);
+        bookRepository.save(book);
+
+        Borrow savedBorrow = borrowRepository.save(borrow);
+
+        return convertToDTO(savedBorrow);
     }
 
     @Transactional
     public BorrowDTO returnBook(Long borrowId) {
-        try {
-            Borrow borrow = borrowRepository.findById(borrowId)
-                    .orElseThrow(() -> new RuntimeException("Borrow record not found with id: " + borrowId));
 
-            // Check if already returned
-            if (borrow.isReturned()) {
-                throw new RuntimeException("Book has already been returned");
-            }
+        Borrow borrow = borrowRepository.findById(borrowId)
+                .orElseThrow(() -> new RuntimeException("Borrow record not found"));
 
-            // Update borrow record
-            borrow.setReturned(true);
-            borrow.setReturnDate(LocalDate.now());
-
-            // Update book availability
-            Book book = borrow.getBook();
-            book.setAvailable(true);
-            bookRepository.save(book);
-
-            Borrow updatedBorrow = borrowRepository.save(borrow);
-            return convertToDTO(updatedBorrow);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error returning book: " + e.getMessage());
+        if (borrow.isReturned()) {
+            throw new RuntimeException("Book already returned");
         }
+
+        borrow.setReturned(true);
+        borrow.setReturnDate(LocalDate.now());
+
+        // Increase available copy
+        Book book = borrow.getBook();
+        book.setAvailableCopies(book.getAvailableCopies() + 1);
+        bookRepository.save(book);
+
+        Borrow updatedBorrow = borrowRepository.save(borrow);
+
+        return convertToDTO(updatedBorrow);
     }
 
     public List<BorrowDTO> getCurrentUserBorrows() {
-        try {
-            User currentUser = userService.getCurrentUser();
-            return borrowRepository.findByUser(currentUser)
-                    .stream()
-                    .map(this::convertToDTO)
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error getting user borrows: " + e.getMessage());
-        }
+
+        User currentUser = userService.getCurrentUser();
+
+        return borrowRepository.findByUser(currentUser).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public List<BorrowDTO> getAllBorrows() {
-        try {
-            return borrowRepository.findAll()
-                    .stream()
-                    .map(this::convertToDTO)
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error getting all borrows: " + e.getMessage());
-        }
+
+        return borrowRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public List<BorrowDTO> getActiveBorrows() {
-        try {
-            return borrowRepository.findByReturnedFalse()
-                    .stream()
-                    .map(this::convertToDTO)
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error getting active borrows: " + e.getMessage());
-        }
+        
+        return borrowRepository.findByReturnedFalse().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     private BorrowDTO convertToDTO(Borrow borrow) {
+
         BorrowDTO dto = new BorrowDTO();
+
         dto.setId(borrow.getId());
         dto.setBorrowDate(borrow.getBorrowDate());
         dto.setReturnDate(borrow.getReturnDate());
         dto.setReturned(borrow.isReturned());
 
-        // Set user info (only id and username)
         if (borrow.getUser() != null) {
             dto.setUserId(borrow.getUser().getId());
             dto.setUsername(borrow.getUser().getUsername());
         }
 
-        // Set book info (only necessary fields)
         if (borrow.getBook() != null) {
             dto.setBookId(borrow.getBook().getId());
             dto.setBookTitle(borrow.getBook().getTitle());
+
             if (borrow.getBook().getAuthor() != null) {
                 dto.setAuthorName(borrow.getBook().getAuthor().getName());
             }

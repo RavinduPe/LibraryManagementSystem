@@ -19,19 +19,25 @@ public class BookService {
     @Autowired
     private AuthorRepository authorRepository;
 
-    public BookDTO createBook(BookDTO bookDTO) {
-        Author author = authorRepository.findById(bookDTO.getAuthorId())
-                .orElseThrow(() -> new RuntimeException("Author not found with id: " + bookDTO.getAuthorId()));
+    public BookDTO createBook(BookDTO dto) {
+
+        Author author = authorRepository.findById(dto.getAuthorId())
+                .orElseThrow(() -> new RuntimeException("Author not found"));
 
         Book book = new Book();
-        book.setTitle(bookDTO.getTitle());
-        book.setGenre(bookDTO.getGenre());
-        book.setPrice(bookDTO.getPrice());
-        book.setAuthor(author);
-        book.setAvailable(true);
 
-        Book savedBook = bookRepository.save(book);
-        return convertToDTO(savedBook);
+        book.setTitle(dto.getTitle());
+        book.setGenre(dto.getGenre());
+        book.setPrice(dto.getPrice());
+        book.setAuthor(author);
+
+        // ⭐ Copy system
+        book.setTotalCopies(dto.getTotalCopies());
+        book.setAvailableCopies(dto.getTotalCopies());
+
+        Book saved = bookRepository.save(book);
+
+        return convertToDTO(saved);
     }
 
     public List<BookDTO> getAllBooks() {
@@ -41,53 +47,68 @@ public class BookService {
     }
 
     public List<BookDTO> getAvailableBooks() {
-        return bookRepository.findByAvailableTrue().stream()
+        return bookRepository.findAll().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public BookDTO getBookById(Long id) {
+
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+
         return convertToDTO(book);
     }
 
-    public BookDTO updateBook(Long id, BookDTO bookDTO) {
-        Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
+    public BookDTO updateBook(Long id, BookDTO dto) {
 
-        if (bookDTO.getTitle() != null) {
-            book.setTitle(bookDTO.getTitle());
-        }
-        if (bookDTO.getGenre() != null) {
-            book.setGenre(bookDTO.getGenre());
-        }
-        if (bookDTO.getPrice() != null) {
-            book.setPrice(bookDTO.getPrice());
-        }
-        if (bookDTO.getAuthorId() != null) {
-            Author author = authorRepository.findById(bookDTO.getAuthorId())
-                    .orElseThrow(() -> new RuntimeException("Author not found with id: " + bookDTO.getAuthorId()));
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+
+        if (dto.getTitle() != null)
+            book.setTitle(dto.getTitle());
+
+        if (dto.getGenre() != null)
+            book.setGenre(dto.getGenre());
+
+        if (dto.getPrice() != null)
+            book.setPrice(dto.getPrice());
+
+        if (dto.getAuthorId() != null) {
+            Author author = authorRepository.findById(dto.getAuthorId())
+                    .orElseThrow(() -> new RuntimeException("Author not found"));
+
             book.setAuthor(author);
         }
 
-        Book updatedBook = bookRepository.save(book);
-        return convertToDTO(updatedBook);
+        if (dto.getTotalCopies() != null) {
+            int diff = dto.getTotalCopies() - book.getTotalCopies();
+            book.setTotalCopies(dto.getTotalCopies());
+            book.setAvailableCopies(book.getAvailableCopies() + diff);
+        }
+
+        return convertToDTO(bookRepository.save(book));
     }
 
     public void deleteBook(Long id) {
+
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+
         bookRepository.delete(book);
     }
 
     private BookDTO convertToDTO(Book book) {
+
         BookDTO dto = new BookDTO();
+
         dto.setId(book.getId());
         dto.setTitle(book.getTitle());
         dto.setGenre(book.getGenre());
         dto.setPrice(book.getPrice());
-        dto.setAvailable(book.isAvailable());
+
+        dto.setTotalCopies(book.getTotalCopies());
+        dto.setAvailableCopies(book.getAvailableCopies());
 
         if (book.getAuthor() != null) {
             dto.setAuthorId(book.getAuthor().getId());

@@ -1,0 +1,23 @@
+name: Spring Boot CI
+
+on:
+  push:
+    branches:[main]
+  pull_request:
+    branches:[main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+      - uses: actions/settup-java@v4
+        with:
+          didtribution: 'temurin'
+          java-version: '8'
+
+      - name: Build with Meaven
+        run : mvn clean install
+

@@ -2,9 +2,9 @@ name: Spring Boot CI
 
 on:
   push:
-    branches:[main]
+    branches: [main]
   pull_request:
-    branches:[main]
+    branches: [main]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,9 +15,8 @@ jobs:
       - name: Setup Java
       - uses: actions/settup-java@v4
         with:
-          didtribution: 'temurin'
-          java-version: '8'
+          didtribution: "temurin"
+          java-version: "8"
 
       - name: Build with Meaven
-        run : mvn clean install
-
+        run: mvn clean install
